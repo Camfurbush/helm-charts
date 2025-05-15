@@ -1,0 +1,33 @@
+name: vault
+imageName: hashicorp/vault
+
+storage:
+  mounts:
+  - storageType: configmap
+    mountPath: /vault/config
+
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      name: truenas-s3
+      value: access_key
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      name: truenas-s3
+      value: secret_key
+  - name: SKIP_CHOWN
+    value: true
+  - name: AWS_S3_ENDPOINT
+    value: https://truenas.camfu.co:9000
+
+configs:
+  - name: vault.json
+
+args: "server"
+
+ingress:
+  port: 8200
+
+securityContext:
+  capabilities:
+    add: ["IPC_LOCK"]

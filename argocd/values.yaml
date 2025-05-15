@@ -1,0 +1,4 @@
+apps:
+  - app_name: codeserver
+  - app_name: kuma
+  - app_name: vault

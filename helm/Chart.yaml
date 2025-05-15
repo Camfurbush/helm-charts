@@ -1,0 +1,7 @@
+name: camfu-co-apps
+description: A helm chart for deploying basic apps to kubernetes
+version: 0.0.1
+apiVersion: v1
+sources:
+  - https://github.com/camfu/hl_helm
+home: "github.com/camfu/hl_helm"

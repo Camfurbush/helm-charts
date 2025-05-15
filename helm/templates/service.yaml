@@ -1,0 +1,15 @@
+{{ if hasKey .Values "ingress" }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Values.name }}
+  name: {{ .Values.name }}
+spec:
+  ports:
+    - name: "http"
+      port: {{ .Values.ingress.port }}
+      targetPort: {{ .Values.ingress.port }}
+  selector:
+    app: {{ .Values.name }}
+{{ end }}

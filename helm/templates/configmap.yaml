@@ -1,0 +1,12 @@
+{{ if hasKey .Values "configs" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-configmap
+
+data:
+{{- range .Values.configs }}
+  {{ .name }}: |
+    {{- $.Files.Get (printf "configs/%s" .name)| nindent 4 }}
+{{- end }}
+{{ end }}

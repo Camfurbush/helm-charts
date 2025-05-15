@@ -1,0 +1,12 @@
+name: Terraform CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - terraform/**
+
+jobs:
+  deploy-terraform:
+    uses: camfu-co/hl_github_pipelines/.github/workflows/terraform-pipeline.yml@main
+    secrets: inherit

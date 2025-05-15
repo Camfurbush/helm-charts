@@ -1,0 +1,13 @@
+name: kuma
+imageName: louislam/uptime-kuma:1
+
+replicas: 2
+
+storage:
+  mounts:
+  - storageType: claim
+    mountPath: /app/data
+    size: 1Gi
+
+ingress:
+  port: 3001

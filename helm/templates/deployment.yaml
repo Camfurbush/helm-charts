@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      {{- if .Values.imagePullSecret }}
+      imagePullSecrets:
+        - name: docker-cfg
+      {{- end }}
+      containers:
+        - image: {{ .Values.imageName }}
+          name: {{ .Values.name }}
+          {{- if .Values.args }}
+          args: [ {{ .Values.args }} ]
+          {{ end }}
+          {{- if .Values.command }}
+          command: {{ .Values.command }}
+          {{ end }}
+          {{- if hasKey .Values "env" }}
+          env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+          {{- if hasKey . "value" }}
+            value: "{{ .value }}"
+          {{- else if hasKey . "valueFrom" }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .valueFrom.name }}
+                key: {{ .valueFrom.value }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if hasKey .Values "securityContext" }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if hasKey .Values "ingress" }}
+          ports:
+            - containerPort: {{ .Values.ingress.port }}
+          {{- end }}
+          {{- if hasKey .Values "storage" }}
+          volumeMounts:
+          {{- $c := 0 }}
+          {{- range .Values.storage.mounts }}
+          {{- $c = add1 $c }}
+          {{- if eq .storageType "nfs" }}
+            - name: {{ default $.Values.name .claimName  }}-{{ $c }}-{{ .storageType }}
+              mountPath: {{ .mountPath }}
+          {{- else if eq .storageType "claim" }}
+            - name: {{ default $.Values.name .claimName  }}-{{ .storageType }}
+              mountPath: {{ .mountPath }}
+          {{- else if eq .storageType "configmap" }}
+            - name: {{ default $.Values.name .claimName  }}-configmap
+              mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+      restartPolicy: Always
+      {{- if hasKey .Values "storage" }}
+      volumes:
+        {{- $c := 0 }}
+        {{- range .Values.storage.mounts }}
+        {{- $c = add1 $c }}
+        {{- if eq .storageType "nfs" }}
+        - name: {{ default $.Values.name .claimName  }}-{{ $c }}-{{ .storageType }}
+          nfs:
+            server: truenas.camfu.co # IP to our NFS server
+            path: /mnt/Pool1/NFS/{{ .path }} # The exported directory
+        {{- else if eq .storageType "claim" }}
+        - name: {{ default $.Values.name .claimName  }}-claim
+          persistentVolumeClaim:
+            claimName: {{ default $.Values.name .claimName  }}-claim
+        {{- else if eq .storageType "configmap" }}
+        - name: {{ $.Values.name }}-configmap
+          configMap:
+            name: {{ $.Values.name }}-configmap
+        {{- end }}
+        {{- end }}
+      {{- end }}

@@ -1,0 +1,17 @@
+name: codeserver
+imageName: codercom/code-server:latest
+
+storage:
+  mounts:
+  - storageType: claim
+    mountPath: /home/coder/
+    size: 1Gi
+
+ingress:
+  port: 8080
+
+env:
+  - name: DOCKER_USER
+    value: coder
+  - name: PASSWORD
+    value: P@ssw0rd

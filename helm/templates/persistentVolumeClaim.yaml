@@ -1,0 +1,22 @@
+{{ if .Values.storage }}
+{{- range .Values.storage.mounts }}
+{{ if eq .storageType "claim" }}
+{{- if .size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    service: {{ default $.Values.name .claimName  }}-claim
+  name: {{ default $.Values.name .claimName  }}-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
+{{ end }}
+{{- end }}
+{{ end }}
